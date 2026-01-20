@@ -1,6 +1,6 @@
 """
 Ocean-Wave-Optimizer(OWO)
-Inspired by the behavior of Tardigrades
+Inspired by the behavior of Ocean Waves
 Author: Ahmed Mohamed Zaki & El-Sayed M. El-kenawy
 """
 
@@ -126,3 +126,4 @@ def OWO(objf, lb, ub, dim, SearchAgents_no, Max_iter):
     s.objfname = objf.__name__
 
     return s
+
