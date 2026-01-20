@@ -69,89 +69,80 @@ print(f"Convergence curve: {solution.convergence}")
 
 ## Mathematical Equations
 
-### 1. Initialization Equation
+### Initialization
 
-The initialization model
-[
-X_i = lb + rand(0,1) \times (ub - lb)
-]
-defines the **initial spatial distribution of waves** (search agents) within the feasible search domain. Each component of the position vector is sampled uniformly between the lower bound (lb) and upper bound (ub), ensuring unbiased coverage of the search space at the start of the optimization process. This mechanism is standard in stochastic optimization and prevents premature bias toward any region of the solution space.
+The initialization equation defines how each search agent (wave) is uniformly distributed within the bounded search space. This guarantees unbiased sampling and adequate coverage at the start of the optimization process.
 
-Such random initialization promotes **global exploration**, a fundamental requirement for avoiding early convergence to local optima in nonlinear or multimodal problems .
+```math
+X_i = lb + rand(0,1) \times (ub - lb), \quad i = 1, 2, \ldots, N
+```
 
----
 
-### 2. Fitness Evaluation and Dominant Wave Selection
 
-The fitness computation
-[
+### Fitness Evaluation
+
+Each wave’s position is evaluated using the objective function, transforming a multidimensional solution into a scalar fitness value.
+
+```math
 f_i = objf(X_i)
-]
-maps each wave’s position to a scalar performance value using the objective function. The dominant (or leading) wave is then identified as
-[
+```
+
+The dominant wave represents the best solution found so far and guides the population movement.
+
+```math
 X_{best} = \arg\min_i f_i
-]
-for minimization problems.
+```
 
-This step establishes a **leader–follower dynamic**, where the best-performing wave represents the most promising solution discovered so far. Similar leader-based mechanisms are widely used in swarm intelligence algorithms to guide population movement toward optimal regions .
 
----
 
-### 3. Exploration Phase (Global Search)
+### Exploration Phase
 
-The exploration update rule
-[
+Global exploration is achieved by introducing stochastic perturbations that allow waves to explore unexplored regions of the search space.
+
+```math
 X_i^{new} = X_i + \alpha \cdot (rand(0,1) - 0.5) \times (ub - lb)
-]
-introduces controlled random perturbations around the current wave position. The scaling factor (\alpha) regulates step size, while the term ((rand - 0.5)) ensures symmetric movement in positive and negative directions.
+```
 
-An alternative exploration strategy is full random reinitialization:
-[
+To prevent stagnation, complete random redistribution may also be applied.
+
+```math
 X_i^{new} = lb + rand(0,1) \times (ub - lb)
-]
-which helps the algorithm **escape stagnation** by injecting diversity when the population becomes overly concentrated. This mechanism is commonly employed in evolutionary computation to counteract loss of diversity .
+```
 
----
 
-### 4. Exploitation Phase (Local Search)
+### Exploitation Phase
 
-During exploitation, waves are attracted toward the dominant wave using:
-[
+Local exploitation pulls waves toward the dominant solution, refining candidate solutions around promising regions.
+
+```math
 X_i^{new} = X_{best} + k \cdot rand(0,1) \times (X_{best} - X_i)
-]
-This equation reduces the distance between subordinate waves and the best solution, intensifying the search locally around high-quality regions. The stochastic multiplier preserves variability while maintaining directional bias.
+```
 
-The nonlinear reflection variant
-[
+A nonlinear reflection strategy enhances fine-grained local adjustments.
+
+```math
 X_i^{new} = X_{best} + (k - rand(0,1)) \cdot X_{best}
-]
-models oscillatory wave behavior and allows fine-grained adjustments near the optimum, enhancing convergence precision. Such nonlinear local search mechanisms are known to improve exploitation efficiency in swarm-based optimizers .
+```
 
----
 
-### 5. Adaptive Control Parameter (k)
 
-The parameter update rule
-[
+### Adaptive Control Parameter
+
+The parameter controlling exploration and exploitation decays nonlinearly to ensure smooth convergence.
+
+```math
 k = a - a \left( \frac{t^2}{T^2} \right)
-]
-implements a **nonlinear decay schedule**, where (k) decreases quadratically as iterations progress. Early iterations favor exploration (large (k)), while later iterations emphasize exploitation (small (k)).
+```
 
-Nonlinear parameter control has been shown to outperform linear schedules by providing smoother transitions between global and local search phases, particularly in complex optimization landscapes .
 
----
 
-### 6. Convergence Monitoring
+### Convergence Criterion
 
-Finally, convergence is tracked using:
-[
+The best fitness value at each iteration is monitored to evaluate convergence behavior.
+
+```math
 f_{best}^{(t)} = \min_i f_i^{(t)}
-]
-which records the best fitness value at each iteration. This metric is used to assess algorithmic progress and determine termination when improvements fall below a predefined tolerance or when the maximum iteration count is reached.
-
-Monitoring best-so-far fitness is a standard convergence criterion in metaheuristic optimization and provides insight into both stability and performance trends .
-
-
+```
 
 
 ## Applications
