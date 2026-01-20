@@ -67,54 +67,92 @@ print(f"Convergence curve: {solution.convergence}")
 | `SearchAgents_no` | int           | Population size (number of waves)   |
 | `Max_iter`        | int           | Maximum number of iterations        |
 
-## Algorithm Mechanics
+## Mathematical Equations
 
-### Exploration Phase (70% initially, decreasing)
+### 1. Initialization Equation
 
-- Generates random wave patterns through interference
-- Creates new waves in random positions
-- Maintains diversity in the population
+The initialization model
+[
+X_i = lb + rand(0,1) \times (ub - lb)
+]
+defines the **initial spatial distribution of waves** (search agents) within the feasible search domain. Each component of the position vector is sampled uniformly between the lower bound (lb) and upper bound (ub), ensuring unbiased coverage of the search space at the start of the optimization process. This mechanism is standard in stochastic optimization and prevents premature bias toward any region of the solution space.
 
-### Exploitation Phase (30% initially, increasing)
+Such random initialization promotes **global exploration**, a fundamental requirement for avoiding early convergence to local optima in nonlinear or multimodal problems .
 
-- Waves move toward the dominant wave
-- Refines solutions around the best-found position
-- Converges to optimal solution
+---
 
-### Stagnation Recovery
+### 2. Fitness Evaluation and Dominant Wave Selection
 
-When fitness remains unchanged for consecutive iterations, the algorithm:
+The fitness computation
+[
+f_i = objf(X_i)
+]
+maps each wave’s position to a scalar performance value using the objective function. The dominant (or leading) wave is then identified as
+[
+X_{best} = \arg\min_i f_i
+]
+for minimization problems.
 
-- Resets exploration percentage to 70%
-- Increases parameter `k` to expand search
-- Prevents premature convergence
+This step establishes a **leader–follower dynamic**, where the best-performing wave represents the most promising solution discovered so far. Similar leader-based mechanisms are widely used in swarm intelligence algorithms to guide population movement toward optimal regions .
 
-## Solution Object
+---
 
-The algorithm returns a `solution` object with the following attributes:
+### 3. Exploration Phase (Global Search)
 
-- `convergence`: Array of best fitness values per iteration
-- `optimizer`: Name of the optimizer ("OWO")
-- `objfname`: Name of the objective function
-- `startTime`: Timestamp when optimization started
-- `endTime`: Timestamp when optimization ended
-- `executionTime`: Total execution time in seconds
+The exploration update rule
+[
+X_i^{new} = X_i + \alpha \cdot (rand(0,1) - 0.5) \times (ub - lb)
+]
+introduces controlled random perturbations around the current wave position. The scaling factor (\alpha) regulates step size, while the term ((rand - 0.5)) ensures symmetric movement in positive and negative directions.
 
-## Example Benchmark Functions
+An alternative exploration strategy is full random reinitialization:
+[
+X_i^{new} = lb + rand(0,1) \times (ub - lb)
+]
+which helps the algorithm **escape stagnation** by injecting diversity when the population becomes overly concentrated. This mechanism is commonly employed in evolutionary computation to counteract loss of diversity .
 
-```python
-# Sphere function
-def sphere(x):
-    return np.sum(x**2)
+---
 
-# Rastrigin function
-def rastrigin(x):
-    return 10*len(x) + np.sum(x**2 - 10*np.cos(2*np.pi*x))
+### 4. Exploitation Phase (Local Search)
 
-# Rosenbrock function
-def rosenbrock(x):
-    return np.sum(100*(x[1:]-x[:-1]**2)**2 + (1-x[:-1])**2)
-```
+During exploitation, waves are attracted toward the dominant wave using:
+[
+X_i^{new} = X_{best} + k \cdot rand(0,1) \times (X_{best} - X_i)
+]
+This equation reduces the distance between subordinate waves and the best solution, intensifying the search locally around high-quality regions. The stochastic multiplier preserves variability while maintaining directional bias.
+
+The nonlinear reflection variant
+[
+X_i^{new} = X_{best} + (k - rand(0,1)) \cdot X_{best}
+]
+models oscillatory wave behavior and allows fine-grained adjustments near the optimum, enhancing convergence precision. Such nonlinear local search mechanisms are known to improve exploitation efficiency in swarm-based optimizers .
+
+---
+
+### 5. Adaptive Control Parameter (k)
+
+The parameter update rule
+[
+k = a - a \left( \frac{t^2}{T^2} \right)
+]
+implements a **nonlinear decay schedule**, where (k) decreases quadratically as iterations progress. Early iterations favor exploration (large (k)), while later iterations emphasize exploitation (small (k)).
+
+Nonlinear parameter control has been shown to outperform linear schedules by providing smoother transitions between global and local search phases, particularly in complex optimization landscapes .
+
+---
+
+### 6. Convergence Monitoring
+
+Finally, convergence is tracked using:
+[
+f_{best}^{(t)} = \min_i f_i^{(t)}
+]
+which records the best fitness value at each iteration. This metric is used to assess algorithmic progress and determine termination when improvements fall below a predefined tolerance or when the maximum iteration count is reached.
+
+Monitoring best-so-far fitness is a standard convergence criterion in metaheuristic optimization and provides insight into both stability and performance trends .
+
+
+
 
 ## Applications
 
