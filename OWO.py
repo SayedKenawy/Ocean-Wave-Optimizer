@@ -1,3 +1,9 @@
+"""
+Ocean-Wave-Optimizer(OWO)
+Inspired by the behavior of Tardigrades
+Author: Ahmed Mohamed Zaki & El-Sayed M. El-kenawy
+"""
+
 import time
 import numpy
 import random
